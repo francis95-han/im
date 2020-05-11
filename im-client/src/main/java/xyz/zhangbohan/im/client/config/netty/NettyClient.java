@@ -12,6 +12,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 /**
  * file encoding: utf-8
@@ -25,6 +26,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class NettyClient {
 
+	@Value("${netty.server.host}")
+	private String serverHost;
+
+	@Value("${netty.server.port}")
+	private Integer serverPort;
+
 	public void start() {
 		EventLoopGroup group = new NioEventLoopGroup();
 		Bootstrap bootstrap = new Bootstrap()
@@ -35,7 +42,7 @@ public class NettyClient {
 				.handler(new NettyClientInitializer());
 
 		try {
-			ChannelFuture future = bootstrap.connect("127.0.0.1", 8090).sync();
+			ChannelFuture future = bootstrap.connect(serverHost, serverPort).sync();
 			log.info("客户端成功....");
 			//发送消息
 			future.channel().writeAndFlush("你好啊");
@@ -43,7 +50,7 @@ public class NettyClient {
 			future.channel().closeFuture().sync();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		}finally {
+		} finally {
 			group.shutdownGracefully();
 		}
 	}
